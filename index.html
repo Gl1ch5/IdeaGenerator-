@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vintage GDD Generator</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="crt">
+    <div class="container">
+        <header>
+            <h1>G.D.D. GENERATOR v1.0</h1>
+            <div class="subtitle">Complete Game Design Document Terminal</div>
+        </header>
+
+        <section id="settings" class="panel border-box">
+            <h2>[SYSTEM_SETTINGS]</h2>
+            <div class="input-group">
+                <label for="apiKey">GROQ API KEY:</label>
+                <input type="password" id="apiKey" placeholder="ENTER YOUR GROQ API KEY..." />
+                <button id="saveKeyBtn" class="btn">SAVE KEY</button>
+            </div>
+            <div id="keyStatus" class="status-msg hidden">KEY SECURED IN SESSION MEMORY.</div>
+        </section>
+
+        <section id="input-section" class="panel border-box">
+            <h2>[INPUT_PARAMETERS]</h2>
+            <p>Describe your game idea, or leave blank for a random concept.</p>
+            <textarea id="promptInput" rows="4" placeholder="e.g., A side-scrolling platformer where the main mechanic is switching gravity..."></textarea>
+
+            <div class="controls">
+                <button id="generateBtn" class="btn primary-btn">[GENERATE G.D.D.]</button>
+                <button id="randomBtn" class="btn secondary-btn">[TRUE RANDOM]</button>
+            </div>
+        </section>
+
+        <div id="loadingIndicator" class="hidden">
+            <svg class="spinner" viewBox="0 0 50 50">
+                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+            </svg>
+            <span>ESTABLISHING CONNECTION TO NEURAL NET...</span>
+        </div>
+
+        <section id="output-section" class="panel border-box hidden">
+            <h2>[OUTPUT_DATA]</h2>
+            <div class="toolbar">
+                <button id="copyBtn" class="btn small-btn">[COPY TO CLIPBOARD]</button>
+                <button id="exportBtn" class="btn small-btn">[EXPORT TO TXT]</button>
+                <button id="historyBtn" class="btn small-btn">[VIEW HISTORY]</button>
+            </div>
+            <div id="outputContainer" class="output-text">
+                <div id="typewriterText"></div>
+            </div>
+        </section>
+
+        <section id="history-section" class="panel border-box hidden">
+            <h2>[SESSION_HISTORY]</h2>
+            <div id="historyList"></div>
+            <button id="closeHistoryBtn" class="btn">[CLOSE HISTORY]</button>
+        </section>
+
+        <footer>
+            <p>POWERED BY GROQ & LLAMA-3-70B</p>
+            <p>DESIGNED FOR GITHUB PAGES</p>
+        </footer>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
