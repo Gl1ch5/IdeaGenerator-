@@ -3,72 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vintage GDD Generator</title>
+    <title>GDD Generator System v1.0</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-<div class="crt">
-    <div class="container">
+    <div id="crt-overlay"></div>
+    <div class="terminal-container">
         <header>
-            <h1>G.D.D. GENERATOR v1.0</h1>
-            <div class="subtitle">Complete Game Design Document Terminal</div>
+            <div class="sys-info">
+                <span>GROQ_OS v3.3</span>
+                <span>MEM: 640K OK</span>
+            </div>
+            <h1>GDD_GEN // GAME DESIGN DOCUMENT GENERATOR</h1>
+            <div class="separator">================================================================================</div>
         </header>
 
-        <section id="settings" class="panel border-box">
-            <h2>[SYSTEM_SETTINGS]</h2>
+        <main id="output-area">
+            <div class="boot-sequence">
+                <p>> INITIATING SYSTEM...</p>
+                <p>> LOADING NEURAL NETWORKS...</p>
+                <p>> CONNECTING TO MAIN_FRAME...</p>
+                <p class="blink">_</p>
+            </div>
+        </main>
+
+        <div id="settings-panel" class="hidden">
+            <div class="panel-header">=== SYSTEM SETTINGS ===</div>
             <div class="input-group">
-                <label for="apiKey">GROQ API KEY:</label>
-                <input type="password" id="apiKey" placeholder="ENTER YOUR GROQ API KEY..." />
-                <button id="saveKeyBtn" class="btn">SAVE KEY</button>
+                <label>> SET API_KEY [GROQ]:</label>
+                <input type="password" id="api-key-input" placeholder="gsk_..." spellcheck="false">
             </div>
-            <div id="keyStatus" class="status-msg hidden">KEY SECURED IN SESSION MEMORY.</div>
-        </section>
-
-        <section id="input-section" class="panel border-box">
-            <h2>[INPUT_PARAMETERS]</h2>
-            <p>Describe your game idea, or leave blank for a random concept.</p>
-            <textarea id="promptInput" rows="4" placeholder="e.g., A side-scrolling platformer where the main mechanic is switching gravity..."></textarea>
-
-            <div class="controls">
-                <button id="generateBtn" class="btn primary-btn">[GENERATE G.D.D.]</button>
-                <button id="randomBtn" class="btn secondary-btn">[TRUE RANDOM]</button>
-            </div>
-        </section>
-
-        <div id="loadingIndicator" class="hidden">
-            <svg class="spinner" viewBox="0 0 50 50">
-                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-            </svg>
-            <span>ESTABLISHING CONNECTION TO NEURAL NET...</span>
+            <button id="save-settings-btn">[ SAVE CONFIG ]</button>
+            <div class="panel-footer">=======================</div>
         </div>
 
-        <section id="output-section" class="panel border-box hidden">
-            <h2>[OUTPUT_DATA]</h2>
-            <div class="toolbar">
-                <button id="copyBtn" class="btn small-btn">[COPY TO CLIPBOARD]</button>
-                <button id="exportBtn" class="btn small-btn">[EXPORT TO TXT]</button>
-                <button id="historyBtn" class="btn small-btn">[VIEW HISTORY]</button>
+        <div id="controls-panel" class="hidden">
+            <div class="separator">--------------------------------------------------------------------------------</div>
+            <div class="command-menu">
+                <span>AVAILABLE COMMANDS:</span>
+                <button class="cmd-btn" id="btn-random" title="Random generation">[1] RANDOM_GEN</button>
+                <button class="cmd-btn" id="btn-custom" title="Custom generation">[2] CUSTOM_GEN</button>
+                <button class="cmd-btn" id="btn-export" title="Export as TXT">[3] EXPORT_TXT</button>
+                <button class="cmd-btn" id="btn-copy" title="Copy to clipboard">[4] COPY_MEM</button>
+                <button class="cmd-btn" id="btn-history" title="View past GDDs">[5] VIEW_HIST</button>
+                <button class="cmd-btn" id="btn-settings" title="System settings">[6] SYS_CONFIG</button>
+                <button class="cmd-btn" id="btn-clear" title="Clear screen">[7] CLR_SCR</button>
+                <button class="cmd-btn" id="btn-stats" title="View generation stats">[8] VIEW_STATS</button>
+                <button class="cmd-btn" id="btn-theme" title="Toggle flicker">[9] TGL_CRT</button>
+                <button class="cmd-btn" id="btn-help" title="Help system">[0] HELP_SYS</button>
             </div>
-            <div id="outputContainer" class="output-text">
-                <div id="typewriterText"></div>
-            </div>
-        </section>
+            <div class="separator">--------------------------------------------------------------------------------</div>
+        </div>
 
-        <section id="history-section" class="panel border-box hidden">
-            <h2>[SESSION_HISTORY]</h2>
-            <div id="historyList"></div>
-            <button id="closeHistoryBtn" class="btn">[CLOSE HISTORY]</button>
-        </section>
-
-        <footer>
-            <p>POWERED BY GROQ & LLAMA-3-70B</p>
-            <p>DESIGNED FOR GITHUB PAGES</p>
-        </footer>
+        <div id="input-area" class="hidden">
+            <label class="prompt-prefix">SYS></label>
+            <input type="text" id="user-input" placeholder="AWAITING INPUT..." autocomplete="off" spellcheck="false">
+            <span class="cursor"></span>
+        </div>
     </div>
-</div>
 
-<script src="js/api.js"></script>
-<script src="js/app.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/features.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

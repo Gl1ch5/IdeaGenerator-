@@ -1,248 +1,262 @@
-// app.js - Main application logic
+document.addEventListener("DOMContentLoaded", () => {
+    // Elements
+    const outputArea = document.getElementById("output-area");
+    const inputArea = document.getElementById("input-area");
+    const userInput = document.getElementById("user-input");
+    const settingsPanel = document.getElementById("settings-panel");
+    const controlsPanel = document.getElementById("controls-panel");
+    const apiKeyInput = document.getElementById("api-key-input");
+    const saveSettingsBtn = document.getElementById("save-settings-btn");
 
-document.addEventListener('DOMContentLoaded', () => {
+    // Command Buttons
+    const btnRandom = document.getElementById("btn-random");
+    const btnCustom = document.getElementById("btn-custom");
+    const btnExport = document.getElementById("btn-export");
+    const btnCopy = document.getElementById("btn-copy");
+    const btnHistory = document.getElementById("btn-history");
+    const btnSettings = document.getElementById("btn-settings");
+    const btnClear = document.getElementById("btn-clear");
+    const btnStats = document.getElementById("btn-stats");
+    const btnTheme = document.getElementById("btn-theme");
+    const btnHelp = document.getElementById("btn-help");
 
-    // DOM Elements
-    const apiKeyInput = document.getElementById('apiKey');
-    const saveKeyBtn = document.getElementById('saveKeyBtn');
-    const keyStatus = document.getElementById('keyStatus');
+    let isBooting = true;
+    let awaitState = 'command'; // command, settings, customPrompt
+    let currentRawGDD = ""; // Store the current unmodified GDD
 
-    const promptInput = document.getElementById('promptInput');
-    const generateBtn = document.getElementById('generateBtn');
-    const randomBtn = document.getElementById('randomBtn');
+    // Audio/Typewriter Sound (Simulated)
+    const typeSound = new Audio("assets/type.mp3");
 
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    const outputSection = document.getElementById('output-section');
-    const typewriterText = document.getElementById('typewriterText');
-    const outputContainer = document.getElementById('outputContainer');
+    // Utilities
+    const appendToOutput = (text, isHTML = false, styleClass = "") => {
+        const p = document.createElement("p");
+        if (styleClass) p.className = styleClass;
 
-    const copyBtn = document.getElementById('copyBtn');
-    const exportBtn = document.getElementById('exportBtn');
-    const historyBtn = document.getElementById('historyBtn');
-
-    const historySection = document.getElementById('history-section');
-    const historyList = document.getElementById('historyList');
-    const closeHistoryBtn = document.getElementById('closeHistoryBtn');
-
-    let currentOutput = '';
-    let isTyping = false;
-    let typeInterval = null;
-    let gddHistory = []; // Feature: Local Session History
-
-    // Initialization
-    checkExistingKey();
-    loadHistory();
-
-    // Event Listeners
-    saveKeyBtn.addEventListener('click', handleSaveKey);
-    generateBtn.addEventListener('click', () => handleGenerate(promptInput.value));
-    randomBtn.addEventListener('click', () => handleGenerate(''));
-    copyBtn.addEventListener('click', handleCopy);
-    exportBtn.addEventListener('click', handleExportTxt);
-    historyBtn.addEventListener('click', toggleHistory);
-    closeHistoryBtn.addEventListener('click', toggleHistory);
-
-    // Feature 4: Client-side Key Management
-    function checkExistingKey() {
-        const key = getApiKey();
-        if (key) {
-            apiKeyInput.value = '**********'; // Mask key
-            showStatus('KEY LOADED FROM MEMORY.');
-        }
-    }
-
-    function handleSaveKey() {
-        const val = apiKeyInput.value;
-        if (val === '**********') return; // Don't re-save mask
-
-        if (saveApiKey(val)) {
-            apiKeyInput.value = '**********';
-            showStatus('KEY SECURED IN SESSION MEMORY.');
+        if (isHTML) {
+            p.innerHTML = text;
+            outputArea.appendChild(p);
+            outputArea.scrollTop = outputArea.scrollHeight;
         } else {
-            showStatus('ERROR: INVALID KEY FORMAT.');
+            p.textContent = text;
+            outputArea.appendChild(p);
+            outputArea.scrollTop = outputArea.scrollHeight;
         }
-    }
+    };
 
-    function showStatus(msg) {
-        keyStatus.textContent = msg;
-        keyStatus.classList.remove('hidden');
-        setTimeout(() => {
-            keyStatus.classList.add('hidden');
-        }, 3000);
-    }
+    const typeText = async (text, speed = 20) => {
+        const p = document.createElement("p");
+        outputArea.appendChild(p);
 
-    // Generation Handling
-    async function handleGenerate(promptStr) {
-        if (!getApiKey()) {
-            alert('SYSTEM ERROR: VALID API KEY REQUIRED IN SETTINGS.');
-            apiKeyInput.focus();
+        for (let i = 0; i < text.length; i++) {
+            p.textContent += text.charAt(i);
+            outputArea.scrollTop = outputArea.scrollHeight;
+            await new Promise(r => setTimeout(r, speed));
+        }
+    };
+
+    // Boot Sequence
+    setTimeout(() => {
+        const bootSeq = document.querySelector('.boot-sequence');
+        if (bootSeq) bootSeq.remove();
+
+        appendToOutput("> SYSTEM ONLINE.");
+
+        if (getApiKey()) {
+            appendToOutput("> API_KEY FOUND IN MEMORY.");
+            showControls();
+        } else {
+            appendToOutput("> NO API_KEY DETECTED. ENTER CONFIG MODE [6].", false, "error-text");
+            showControls();
+        }
+
+        inputArea.classList.remove("hidden");
+        userInput.focus();
+        isBooting = false;
+    }, 2000);
+
+    // Show Panels
+    const showSettings = () => {
+        settingsPanel.classList.remove("hidden");
+        controlsPanel.classList.add("hidden");
+        apiKeyInput.value = getApiKey() || "";
+        apiKeyInput.focus();
+        awaitState = 'settings';
+        appendToOutput("> ENTERING SETTINGS MODE...");
+    };
+
+    const hideSettings = () => {
+        settingsPanel.classList.add("hidden");
+        showControls();
+        awaitState = 'command';
+        userInput.focus();
+    };
+
+    const showControls = () => {
+        controlsPanel.classList.remove("hidden");
+    };
+
+    // Actions
+    const handleGenerate = async (type, topic = null) => {
+        const key = getApiKey();
+        if (!key) {
+            appendToOutput("> ERR: NO API_KEY FOUND. CONFIGURE FIRST.", false, "error-text");
             return;
         }
 
-        if (isTyping) {
-            clearInterval(typeInterval);
-            isTyping = false;
-        }
+        appendToOutput(`> EXECUTING ${type.toUpperCase()}_GEN...`);
+        appendToOutput("> AWAITING RESPONSE FROM MAIN_FRAME (THIS MAY TAKE A MOMENT)...", false, "blink");
 
-        setLoading(true);
-        typewriterText.innerHTML = '';
-        currentOutput = '';
+        // Disable input
+        inputArea.classList.add("hidden");
+        controlsPanel.classList.add("hidden");
 
         try {
-            // Feature 1 & 2 & 3: API call
-            const result = await generateGDD(promptStr);
-            currentOutput = result;
+            const rawGdd = await generateGDD(key, type, topic);
 
-            // Feature 9: Save to history
-            saveToHistory(promptStr || 'RANDOM GENERATION', result);
+            // Remove blinker
+            const blinkers = document.querySelectorAll(".blink");
+            blinkers.forEach(b => b.remove());
 
-            setLoading(false);
+            appendToOutput("> GENERATION COMPLETE. PARSING DATA...");
 
-            // Feature 5 & 6: Typewriter effect
-            typeWriterEffect(currentOutput);
+            currentRawGDD = rawGdd;
+            addHistoryEntry(rawGdd, type);
 
-        } catch (error) {
-            setLoading(false);
-            currentOutput = `[SYSTEM FAILURE]\n\nERROR TRACE:\n${error.message}\n\nPLEASE CHECK API KEY OR NETWORK CONNECTION.`;
-            typeWriterEffect(currentOutput);
+            // Format and display
+            appendToOutput(formatMarkdown(rawGdd), true);
+            appendToOutput("> END OF FILE.");
+
+        } catch (err) {
+            // Remove blinker
+            const blinkers = document.querySelectorAll(".blink");
+            blinkers.forEach(b => b.remove());
+            appendToOutput(`> ERR: ${err.message}`, false, "error-text");
+        } finally {
+            inputArea.classList.remove("hidden");
+            controlsPanel.classList.remove("hidden");
+            userInput.focus();
         }
-    }
+    };
 
-    function setLoading(isLoading) {
-        const outSection = document.getElementById('output-section');
-        const inputSection = document.getElementById('input-section');
-
-        if (isLoading) {
-            loadingIndicator.classList.remove('hidden');
-            outSection.classList.add('hidden');
-            inputSection.style.opacity = '0.5';
-            generateBtn.disabled = true;
-            randomBtn.disabled = true;
+    // Event Listeners
+    saveSettingsBtn.addEventListener("click", () => {
+        const val = apiKeyInput.value.trim();
+        if (val) {
+            saveApiKey(val);
+            appendToOutput("> API_KEY UPDATED.");
         } else {
-            loadingIndicator.classList.add('hidden');
-            outSection.classList.remove('hidden');
-            inputSection.style.opacity = '1';
-            generateBtn.disabled = false;
-            randomBtn.disabled = false;
-            // Scroll to output
-            outSection.scrollIntoView({ behavior: 'smooth' });
+            deleteApiKey();
+            appendToOutput("> API_KEY CLEARED.");
         }
-    }
+        hideSettings();
+    });
 
-    function typeWriterEffect(text) {
-        isTyping = true;
-        let i = 0;
-        typewriterText.innerHTML = '';
+    // Buttons Actions
+    btnRandom.addEventListener("click", () => handleGenerate("random"));
+    btnCustom.addEventListener("click", () => {
+        awaitState = 'customPrompt';
+        appendToOutput("> ENTER TOPIC/IDEA FOR CUSTOM_GEN:");
+        userInput.focus();
+    });
 
-        typeInterval = setInterval(() => {
-            if (i < text.length) {
-                // Quick hack for simple markdown rendering in typing effect
-                let char = text.charAt(i);
-                if (char === '\n') char = '<br>';
-
-                typewriterText.innerHTML += char;
-                outputContainer.scrollTop = outputContainer.scrollHeight;
-                i++;
-            } else {
-                clearInterval(typeInterval);
-                isTyping = false;
-                formatOutput();
-            }
-        }, 15); // Typing speed
-    }
-
-    function formatOutput() {
-        // Simple markdown parsing after typing is done for better readability
-        let formatted = currentOutput
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/## (.*)/g, '<h3>$1</h3>')
-            .replace(/# (.*)/g, '<h2>$1</h2>')
-            .replace(/- (.*)/g, '• $1')
-            .replace(/\n/g, '<br>');
-        typewriterText.innerHTML = formatted;
-    }
-
-    // Feature 7: Copy
-    function handleCopy() {
-        if (!currentOutput) return;
-        navigator.clipboard.writeText(currentOutput).then(() => {
-            const originalText = copyBtn.innerText;
-            copyBtn.innerText = '[COPIED!]';
-            setTimeout(() => { copyBtn.innerText = originalText; }, 2000);
-        }).catch(err => {
-            console.error('Failed to copy text: ', err);
-            alert('SYSTEM ERROR: CLIPBOARD ACCESS DENIED.');
-        });
-    }
-
-    // Feature 8: Export TXT
-    function handleExportTxt() {
-        if (!currentOutput) return;
-        const blob = new Blob([currentOutput], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-
-        // Extract a crude title or use default
-        let titleMatch = currentOutput.match(/TITLE:\s*(.*)/i) || currentOutput.match(/#\s*(.*)/);
-        let filename = titleMatch ? titleMatch[1].trim().replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'gdd_export';
-
-        a.href = url;
-        a.download = `${filename}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    // Feature 9: History
-    function saveToHistory(prompt, result) {
-        const entry = {
-            id: Date.now(),
-            prompt: prompt,
-            snippet: result.substring(0, 50).replace(/\n/g, ' ') + '...',
-            full: result
-        };
-        gddHistory.unshift(entry);
-        if (gddHistory.length > 5) gddHistory.pop(); // Keep last 5
-
-        sessionStorage.setItem('gdd_history', JSON.stringify(gddHistory));
-        renderHistory();
-    }
-
-    function loadHistory() {
-        const saved = sessionStorage.getItem('gdd_history');
-        if (saved) {
-            try {
-                gddHistory = JSON.parse(saved);
-                renderHistory();
-            } catch (e) {
-                console.error('Failed to parse history');
-            }
-        }
-    }
-
-    function renderHistory() {
-        historyList.innerHTML = '';
-        if (gddHistory.length === 0) {
-            historyList.innerHTML = '<p>NO SESSION DATA FOUND.</p>';
+    btnExport.addEventListener("click", () => {
+        if (!currentRawGDD) {
+            appendToOutput("> ERR: NO DATA IN BUFFER TO EXPORT.", false, "error-text");
             return;
         }
+        downloadTxtFile("GDD_OUTPUT.txt", currentRawGDD);
+        appendToOutput("> EXPORT COMPLETE. CHECK LOCAL FS.");
+    });
 
-        gddHistory.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'history-item';
-            div.innerHTML = `<strong>> ${item.prompt}</strong><br><small>${item.snippet}</small>`;
-            div.addEventListener('click', () => {
-                currentOutput = item.full;
-                document.getElementById('output-section').classList.remove('hidden');
-                formatOutput();
-                toggleHistory();
+    btnCopy.addEventListener("click", async () => {
+        if (!currentRawGDD) {
+            appendToOutput("> ERR: NO DATA IN BUFFER TO COPY.", false, "error-text");
+            return;
+        }
+        const success = await copyToClipboard(currentRawGDD);
+        if (success) {
+            appendToOutput("> DATA COPIED TO CLIPBOARD.");
+        } else {
+            appendToOutput("> ERR: CLIPBOARD ACCESS DENIED.", false, "error-text");
+        }
+    });
+
+    btnHistory.addEventListener("click", () => {
+        const history = getHistory();
+        if (history.length === 0) {
+            appendToOutput("> NO HISTORY FOUND.");
+        } else {
+            appendToOutput(`> FOUND ${history.length} RECORDS:`);
+            history.forEach((h, i) => {
+                appendToOutput(`[${i}] ${new Date(h.timestamp).toLocaleString()} - ${h.type.toUpperCase()}_GEN`);
             });
-            historyList.appendChild(div);
-        });
-    }
+            appendToOutput("> HISTORY DISPLAY COMPLETE.");
+        }
+    });
 
-    function toggleHistory() {
-        historySection.classList.toggle('hidden');
-    }
+    btnSettings.addEventListener("click", showSettings);
+
+    btnClear.addEventListener("click", () => {
+        outputArea.innerHTML = "";
+        appendToOutput("> SCREEN CLEARED.");
+    });
+
+    btnStats.addEventListener("click", () => {
+        const stats = getStats();
+        appendToOutput("> SYSTEM STATS:");
+        appendToOutput(`> TOTAL GENERATED: ${stats.totalGenerated}`);
+        appendToOutput(`> LAST ACTIVITY:   ${stats.lastGenerated}`);
+    });
+
+    btnTheme.addEventListener("click", () => {
+        const isOn = toggleCrtEffect();
+        appendToOutput(`> CRT FLICKER SET TO: ${isOn ? 'ON' : 'OFF'}`);
+    });
+
+    btnHelp.addEventListener("click", () => {
+        appendToOutput("> HELP SYSTEM:");
+        appendToOutput("> USE NUMBER KEYS 1-0 OR CLICK BUTTONS TO EXECUTE COMMANDS.");
+        appendToOutput("> SET API_KEY [6] FIRST BEFORE GENERATING.");
+    });
+
+    // Input handling (CLI simulation)
+    userInput.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+            const val = userInput.value.trim();
+            userInput.value = "";
+
+            if (!val) return;
+
+            appendToOutput(`SYS> ${val}`);
+
+            if (awaitState === 'customPrompt') {
+                awaitState = 'command';
+                handleGenerate("custom", val);
+                return;
+            }
+
+            // Simple command routing
+            switch (val.toLowerCase()) {
+                case '1': btnRandom.click(); break;
+                case '2': btnCustom.click(); break;
+                case '3': btnExport.click(); break;
+                case '4': btnCopy.click(); break;
+                case '5': btnHistory.click(); break;
+                case '6': btnSettings.click(); break;
+                case '7': btnClear.click(); break;
+                case '8': btnStats.click(); break;
+                case '9': btnTheme.click(); break;
+                case '0': btnHelp.click(); break;
+                default:
+                    appendToOutput(`> ERR: UNKNOWN COMMAND "${val}". TYPE '0' FOR HELP.`, false, "error-text");
+            }
+        }
+    });
+
+    // Click anywhere to focus input
+    document.body.addEventListener("click", (e) => {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+            userInput.focus();
+        }
+    });
 });

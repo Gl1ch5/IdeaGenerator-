@@ -1,271 +1,213 @@
 :root {
-    --bg-color: #050505;
-    --text-color: #ffffff;
-    --accent-color: #bbbbbb;
-    --font-family: "Courier New", Courier, monospace;
+    --bg-color: #000000;
+    --fg-color: #ffffff; /* pure white for b&w style */
+    --dim-color: #aaaaaa;
+    --font-stack: "Courier New", Courier, monospace;
 }
 
 body {
     background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: var(--font-family);
+    color: var(--fg-color);
+    font-family: var(--font-stack);
     margin: 0;
     padding: 0;
-    line-height: 1.6;
     overflow-x: hidden;
+    font-size: 16px;
+    line-height: 1.4;
 }
 
-/* CRT Screen Effect */
-.crt::before {
-    content: " ";
-    display: block;
-    position: absolute;
+#crt-overlay {
+    position: fixed;
     top: 0;
     left: 0;
-    bottom: 0;
-    right: 0;
+    width: 100vw;
+    height: 100vh;
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 2;
     background-size: 100% 2px, 3px 100%;
+    z-index: 9999;
     pointer-events: none;
+    opacity: 0.8;
 }
 
-.crt::after {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
-    z-index: 3;
-    pointer-events: none;
-}
-
-.container {
-    max-width: 800px;
-    margin: 0 auto;
+.terminal-container {
     padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 header {
-    text-align: center;
-    border-bottom: 2px dashed var(--text-color);
-    padding-bottom: 20px;
-    margin-bottom: 30px;
-    animation: flicker 0.15s infinite;
-}
-
-h1 {
-    font-size: 2.5rem;
-    margin: 0;
-    letter-spacing: 5px;
-    text-transform: uppercase;
-}
-
-.subtitle {
-    font-size: 1.2rem;
-    color: var(--accent-color);
-}
-
-.panel {
-    border: 1px solid var(--text-color);
-    padding: 20px;
     margin-bottom: 20px;
-    background: rgba(255, 255, 255, 0.05);
 }
 
-h2 {
-    font-size: 1.5rem;
-    margin-top: 0;
-    border-bottom: 1px solid var(--text-color);
-    display: inline-block;
-    padding-bottom: 5px;
-}
-
-.input-group {
+.sys-info {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    font-size: 0.9em;
+    color: var(--dim-color);
     margin-bottom: 10px;
 }
 
-input, textarea {
-    background-color: transparent;
-    border: 1px solid var(--text-color);
-    color: var(--text-color);
-    font-family: var(--font-family);
-    padding: 10px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-input:focus, textarea:focus {
-    outline: none;
-    border-color: #fff;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-}
-
-.btn {
-    background-color: transparent;
-    color: var(--text-color);
-    border: 1px solid var(--text-color);
-    padding: 10px 20px;
-    font-family: var(--font-family);
-    cursor: pointer;
+h1 {
+    font-size: 1.5em;
+    margin: 0;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    transition: all 0.3s ease;
 }
 
-.btn:hover {
-    background-color: var(--text-color);
-    color: var(--bg-color);
+.separator {
+    color: var(--dim-color);
+    margin: 10px 0;
+    white-space: pre;
+    overflow: hidden;
 }
 
-.primary-btn {
-    font-weight: bold;
-    border-width: 2px;
-}
-
-.controls {
-    display: flex;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.toolbar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.small-btn {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-}
-
-.output-text {
-    white-space: pre-wrap;
-    min-height: 200px;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid var(--accent-color);
+#output-area {
+    min-height: 300px;
+    max-height: 60vh;
     overflow-y: auto;
-    max-height: 600px;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
-/* Cursor Animation */
-#typewriterText::after {
-    content: '_';
-    animation: blink 1s step-end infinite;
+.boot-sequence p {
+    margin: 5px 0;
 }
 
-@keyframes blink {
+.blink {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
     50% { opacity: 0; }
-}
-
-@keyframes flicker {
-    0% { opacity: 0.95; }
-    5% { opacity: 0.85; }
-    10% { opacity: 0.95; }
-    15% { opacity: 1; }
-    100% { opacity: 1; }
 }
 
 .hidden {
     display: none !important;
 }
 
-/* Spinner Animation */
-#loadingIndicator {
-    text-align: center;
-    margin: 30px 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
+/* Forms and Inputs */
+input[type="text"], input[type="password"] {
+    background: transparent;
+    border: none;
+    color: var(--fg-color);
+    font-family: var(--font-stack);
+    font-size: 1em;
+    outline: none;
+    width: 80%;
 }
 
-.spinner {
-    animation: rotate 2s linear infinite;
-    z-index: 2;
-    position: relative;
-    width: 50px;
-    height: 50px;
+input::placeholder {
+    color: var(--dim-color);
 }
 
-.spinner .path {
-    stroke: var(--text-color);
-    stroke-linecap: square;
-    animation: dash 1.5s ease-in-out infinite;
-}
-
-@keyframes rotate {
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes dash {
-    0% {
-        stroke-dasharray: 1, 150;
-        stroke-dashoffset: 0;
-    }
-    50% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -35;
-    }
-    100% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -124;
-    }
-}
-
-.status-msg {
-    color: #aaaaaa;
-    font-size: 0.9rem;
-    margin-top: 5px;
-}
-
-#historyList {
+#settings-panel {
+    border: 1px dashed var(--fg-color);
+    padding: 15px;
     margin-bottom: 20px;
 }
 
-.history-item {
-    padding: 10px;
-    border-bottom: 1px dashed var(--accent-color);
-    cursor: pointer;
-}
-
-.history-item:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-footer {
+.panel-header, .panel-footer {
     text-align: center;
-    margin-top: 50px;
-    font-size: 0.8rem;
-    color: var(--accent-color);
-    border-top: 1px dashed var(--text-color);
-    padding-top: 20px;
+    color: var(--dim-color);
+    margin-bottom: 15px;
 }
 
-/* Scrollbar styling for that retro feel */
+.input-group {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.input-group label {
+    margin-right: 10px;
+}
+
+button {
+    background: transparent;
+    border: none;
+    color: var(--fg-color);
+    font-family: var(--font-stack);
+    font-size: 1em;
+    cursor: pointer;
+    text-transform: uppercase;
+    padding: 5px 10px;
+}
+
+button:hover {
+    background: var(--fg-color);
+    color: var(--bg-color);
+}
+
+.cmd-btn {
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 10px;
+}
+
+.command-menu span {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--dim-color);
+}
+
+#input-area {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.prompt-prefix {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/* Animations */
+.svg-animation {
+    width: 100px;
+    height: 100px;
+    margin: 20px auto;
+    display: block;
+}
+
+.spin {
+    animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* Scrollbar formatting */
 ::-webkit-scrollbar {
     width: 10px;
 }
-
 ::-webkit-scrollbar-track {
     background: var(--bg-color);
-    border-left: 1px solid var(--text-color);
+    border-left: 1px solid var(--dim-color);
 }
-
 ::-webkit-scrollbar-thumb {
-    background: var(--text-color);
+    background: var(--fg-color);
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #aaaaaa;
+/* Markdown formatting in output */
+.gdd-content h1, .gdd-content h2, .gdd-content h3 {
+    text-transform: uppercase;
+    border-bottom: 1px dashed var(--dim-color);
+    padding-bottom: 5px;
+    margin-top: 20px;
+}
+
+.gdd-content ul {
+    list-style-type: square;
+}
+
+.error-text {
+    color: var(--fg-color);
+    background-color: #333;
+    padding: 2px 5px;
+    border: 1px solid var(--fg-color);
 }
